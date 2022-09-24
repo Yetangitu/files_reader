@@ -43,9 +43,9 @@ class LoadViewerListener implements IEventListener {
                 if (!($event instanceof LoadViewer || $event instanceof LoadAdditionalScriptsEvent)) {
                         return;
                 }
-		$this->initialStateService->provideInitialState('epub_enabled', $this->config->getUserValue($this->userId, Application::APP_ID, 'epub_enable'));
-		$this->initialStateService->provideInitialState('pdf_enabled', $this->config->getUserValue($this->userId, Application::APP_ID, 'pdf_enable'));
-		$this->initialStateService->provideInitialState('cbx_enabled', $this->config->getUserValue($this->userId, Application::APP_ID, 'cbx_enable'));
+		$this->initialStateService->provideInitialState('epub_enabled', $this->config->getUserValue($this->userId, Application::APP_ID, 'epub_enable', 'true'));
+		$this->initialStateService->provideInitialState('pdf_enabled', $this->config->getUserValue($this->userId, Application::APP_ID, 'pdf_enable', 'true'));
+		$this->initialStateService->provideInitialState('cbx_enabled', $this->config->getUserValue($this->userId, Application::APP_ID, 'cbx_enable', 'true'));
                 Util::addScript(Application::APP_ID, 'plugin');
         }
 }

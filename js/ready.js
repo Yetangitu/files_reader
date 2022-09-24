@@ -25,9 +25,6 @@ document.onreadystatechange = function () {
         options.session.basePath = $session.data('basepath');
         options.session.downloadLink = $session.data('downloadlink');
 
-        console.log(options.session.basePath);
-
-
         /* functions return jquery promises */
         options.session.getPreference = function(name) {
             return $.get(options.session.basePath + "preference/" + options.session.fileId + "/" + options.session.scope + "/" + name);

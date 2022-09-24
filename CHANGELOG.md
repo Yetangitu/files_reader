@@ -1,6 +1,11 @@
+## 1.5.3 - 2022-08-24
+### Fixed
+ - Revert to oc_reader_prefs to avoid problem with "too long index name", this undoes the change in 1.5.2.
+ - reduce maximum database string column size to 3999 to get around '4000 length limit' (https://github.com/nextcloud/server/issues/31791)
+
 ## 1.5.2 - 2022-08-24
 ### Fixed
- - Typo in (database) Migrations kept Reader working for those who did not already have the correct table in their database
+ - Typo in (database) Migrations kept Reader from working for those who did not already have the correct table in their database
 
 ## 1.5.1 - 2022-08-24
 ### Fixed

@@ -33,7 +33,7 @@ class Hooks {
         $queryBuilder->execute();
 
         $queryBuilder = $connection->getQueryBuilder();
-        $queryBuilder->delete('reader_preferences')->where('file_id = :file_id')->setParameter(':file_id', $fileId); 
+        $queryBuilder->delete('reader_prefs')->where('file_id = :file_id')->setParameter(':file_id', $fileId); 
         $queryBuilder->execute();
     }
 
@@ -43,7 +43,7 @@ class Hooks {
         $queryBuilder->execute();
 
         $queryBuilder = $connection->getQueryBuilder();
-        $queryBuilder->delete('reader_preferences')->where('user_id = :user_id')->setParameter(':user_id', $userId); 
+        $queryBuilder->delete('reader_prefs')->where('user_id = :user_id')->setParameter(':user_id', $userId); 
         $queryBuilder->execute();
     }
 }

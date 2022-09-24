@@ -12,7 +12,7 @@ use OCP\Migration\SimpleMigrationStep;
 /**
  * Auto-generated migration step
  */
-class Version015002Date20220924183940 extends SimpleMigrationStep {
+class Version015003Date20220924233946 extends SimpleMigrationStep {
 
     /**
      * @param IOutput $output
@@ -40,13 +40,13 @@ class Version015002Date20220924183940 extends SimpleMigrationStep {
                 'length' => 8,
                 'unsigned' => true,
             ]);
-            // user ID, maps bookmark to NC/OC user
+            // user ID, maps bookmark to NC user
             $table->addColumn('user_id', 'string', [
                 'notnull' => true,
                 'length' => 64,
                 'default' => '',
             ]);
-            // file ID, maps to NC/OC file ID
+            // file ID, maps to NC file ID
             $table->addColumn('file_id', 'bigint', [
                 'notnull' => true,
                 'length' => 11,
@@ -70,7 +70,7 @@ class Version015002Date20220924183940 extends SimpleMigrationStep {
             ]);
             $table->addColumn('content', 'string', [
                 'notnull' => false,
-                'length' => 4096,
+                'length' => 3999,
             ]);
             $table->addColumn('last_modified', 'bigint', [
                 'notnull' => false,
@@ -84,21 +84,21 @@ class Version015002Date20220924183940 extends SimpleMigrationStep {
             $table->addIndex(['name'], 'reader_bookmarks_name_index');
         }
 
-        if (!$schema->hasTable('reader_preferences')) {
-            $table = $schema->createTable('reader_preferences');
+        if (!$schema->hasTable('reader_prefs')) {
+            $table = $schema->createTable('reader_prefs');
             $table->addColumn('id', 'bigint', [
                 'autoincrement' => true,
                 'notnull' => true,
                 'length' => 8,
                 'unsigned' => true,
             ]);
-            // user ID, maps preference to NC/OC user
+            // user ID, maps preference to NC user
             $table->addColumn('user_id', 'string', [
                 'notnull' => true,
                 'length' => 64,
                 'default' => '',
             ]);
-            // file ID, maps to NC/OC file ID
+            // file ID, maps to NC file ID
             $table->addColumn('file_id', 'bigint', [
                 'notnull' => true,
                 'length' => 11,
@@ -116,7 +116,7 @@ class Version015002Date20220924183940 extends SimpleMigrationStep {
             ]);
             $table->addColumn('value', 'string', [
                 'notnull' => true,
-                'length' => 4096,
+                'length' => 3999,
                 'default' => '',
             ]);
             $table->addColumn('last_modified', 'bigint', [
@@ -126,17 +126,9 @@ class Version015002Date20220924183940 extends SimpleMigrationStep {
                 'unsigned' => true,
             ]);
             $table->setPrimaryKey(['id']);
-            $table->addIndex(['file_id'], 'reader_preferences_file_id_index');
-            $table->addIndex(['user_id'], 'reader_preferences_user_id_index');
-            $table->addIndex(['scope'], 'reader_preferences_scope_index');
-        }
-        
-        if ($schema->hasTable('reader_prefs')) {
-            $table = $schema->getTable('reader_prefs');
-            $table->dropIndex('reader_prefs_file_id_index');
-            $table->dropIndex('reader_prefs_user_id_index');
-            $table->dropIndex('reader_prefs_scope_index');
-            $schema->dropTable('reader_prefs');
+            $table->addIndex(['file_id'], 'reader_prefs_file_id_index');
+            $table->addIndex(['user_id'], 'reader_prefs_user_id_index');
+            $table->addIndex(['scope'], 'reader_prefs_scope_index');
         }
         return $schema;
     }
