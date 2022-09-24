@@ -25,7 +25,7 @@ class LoadPublicViewerListener implements IEventListener {
         private IInitialState $initialStateService;
 
         public function __construct(
-                IInitialState $initialStateService,
+                IInitialState $initialStateService
         ) {
                 $this->initialStateService = $initialStateService;
         }

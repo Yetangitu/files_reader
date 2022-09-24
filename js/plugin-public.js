@@ -11,39 +11,55 @@
 
 
 (function(OCA) {
-
     OCA.Files_Reader = OCA.Files_Reader || {};
     const epub_enabled = OCP.InitialState.loadState('files_reader', 'epub_enabled');
     const pdf_enabled = OCP.InitialState.loadState('files_reader', 'pdf_enabled');
     const cbx_enabled = OCP.InitialState.loadState('files_reader', 'cbx_enabled');
+    const mimeHandlers = {
+        'epub': { default: epub_enabled, mimeTypes: ['application/epub+zip']},
+        'pdf': { default: pdf_enabled, mimeTypes: ['application/pdf']},
+        'cbx': { default: cbx_enabled, mimeTypes: [
+            'application/comicbook+7z',
+            'application/comicbook+rar',
+            'application/comicbook+tar',
+            'application/comicbook+zip',
+            'application/x-cbr'
+        ]}
+    };
 
-    /* comicbooks come in many different forms... */
-    const cbx_types= [
-        'application/comicbook+7z',
-        'application/comicbook+rar',
-        'application/comicbook+tar',
-        'application/comicbook+zip',
-        'application/x-cbr',
-        ];
-        
+    const mimeMappings = {
+        'application/epub+zip': 'epub',
+        'application/pdf': 'pdf',
+        'application/x-cbr': 'cbx',
+        'application/comicbook+7z': 'cbx',
+        'application/comicbook+rar': 'cbx',
+        'application/comicbook+tar': 'cbx',
+        'application/comicbook+zip': 'cbx'
+    };
 
-    var isMobile = navigator.userAgent.match(/Mobi/i);
-    var hasTouch = 'ontouchstart' in document.documentElement;
+    const isMobileUAD = window.navigator.userAgentData?.mobile;
+    const isMobile = typeof isMobileUAD === 'boolean'
+        ? isMobileUAD
+        : navigator.userAgent.match(/Mobi/i);
 
     function actionHandler(fileName, mime, context) {
-        var sharingToken = $('#sharingToken').val();
-        var downloadUrl = OC.generateUrl('/s/{token}/download?files={files}&path={path}', {
-            token: sharingToken,
-            files: fileName,
-            path:  context.dir
-        });
-        OCA.Files_Reader.Plugin.show(downloadUrl, mime, true);
+        const downloadUrl = Files.getDownloadUrl(fileName, context.dir);
+        OCA.Files_Reader.Plugin.show(downloadUrl, mimeMappings[mime], true);
     }
+
+
 
     /**
      * @namespace OCA.Files_Reader.Plugin
      */
     OCA.Files_Reader.Plugin = {
+
+        /**
+         * @param mimeType
+         */
+        getMapping: function(mimeType) {
+            return mimeMappings[mimeType];
+        },
 
         /**
          * @param fileList
@@ -79,12 +95,12 @@
          * @param downloadUrl
          * @param isFileList
          */
-        show: function(downloadUrl, mimeType, isFileList) {
+        show: function(downloadUrl, fileType, isFileList) {
             var self = this;
             var $iframe;
-            var viewer = OC.generateUrl('/apps/files_reader/?file={file}&type={type}', {file: downloadUrl, type: mimeType});
-            // launch in new window on mobile and touch devices...
-            if (isMobile || hasTouch) {
+            var viewer = OC.generateUrl('/apps/files_reader/?file={file}&type={type}', {file: downloadUrl, type: fileType});
+            // launch in new window on mobile devices...
+            if (isMobile) {
                 window.open(viewer, downloadUrl);
             } else {
                 $iframe = '<iframe style="width:100%;height:100%;display:block;position:absolute;top:0;" src="' + viewer + '" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"  sandbox="allow-scripts allow-same-origin"/>';
@@ -108,48 +124,23 @@
          */
         _extendFileActions: function(fileActions) {
             var self = this;
-            fileActions.registerAction({
-                name: 'view-epub',
-                displayName: 'View',
-                mime: 'application/epub+zip',
-                permissions: OC.PERMISSION_READ,
-                actionHandler: function(fileName, context){
-                    return actionHandler(fileName, 'application/epub+zip', context);
-                }
-            });
-            for (let i = 0; i < cbx_types.length; i++) {
-                fileActions.registerAction({
-                    name: 'view-cbr',
-                    displayName: 'View',
-                    mime: cbx_types[i],
-                    permissions: OC.PERMISSION_READ,
-                    actionHandler: function(fileName, context) {
-                        return actionHandler(fileName, 'application/x-cbr', context);
-                    }
+            for (handler in mimeHandlers) {
+                const actionName = 'view-' + handler;
+                mimeHandlers[handler].mimeTypes.forEach(function(mimeType) {
+                    fileActions.registerAction({
+                        name: actionName,
+                        displayName: 'View',
+                        mime: mimeType,
+                        permissions: OC.PERMISSION_READ,
+                        actionHandler: function(fileName, context){
+                            return actionHandler(fileName, mimeType, context);
+                        }
+                    });
+
+                    if (mimeHandlers[handler].default === 'true')
+                        fileActions.setDefault(mimeType, actionName);
                 });
             }
-            fileActions.registerAction({
-                name: 'view-pdf',
-                displayName: 'View',
-                mime: 'application/pdf',
-                permissions: OC.PERMISSION_READ,
-                actionHandler: function(fileName, context) {
-                    return actionHandler(fileName, 'application/pdf', context);
-                }
-            });
-
-
-            
-
-            if (epub_enabled === 'true')
-                fileActions.setDefault('application/epub+zip', 'view-epub');
-            if (cbx_enabled === 'true') {
-                for (let i = 0; i < cbx_types.length; i++) {
-                    fileActions.setDefault(cbx_types[i], 'view-cbr');
-                }
-            }
-            if (pdf_enabled === 'true')
-                fileActions.setDefault('application/pdf', 'view-pdf');
         }
     };
 
@@ -159,19 +150,11 @@ OC.Plugins.register('OCA.Files.FileList', OCA.Files_Reader.Plugin);
 
 // FIXME: Hack for single public file view since it is not attached to the fileslist
 $(document).ready(function(){
-    const mimetype=$('#mimetype').val();
-    if ($('#isPublic').val()
-        && (mimetype === 'application/epub+zip'
-            || mimetype === 'application/pdf'
-            || mimetype === 'application/x-cbr'
-            || mimetype.startsWith('application/comicbook'))
-    ) {
-        var sharingToken = $('#sharingToken').val();
-        var downloadUrl = OC.generateUrl('/s/{token}/download', {token: sharingToken});
-        var viewer = OCA.Files_Reader.Plugin;
-        var mime = $('#mimetype').val();
-        if (mimetype.startsWith('application/comicbook'))
-            mime = 'application/x-cbr';
-        viewer.show(downloadUrl, mime, false);
+    const viewer = OCA.Files_Reader.Plugin;
+    const fileType=viewer.getMapping($('#mimetype').val());
+    if ($('#isPublic').val() && fileType) {
+        const sharingToken = $('#sharingToken').val();
+        const downloadUrl = OC.generateUrl('/s/{token}/download', {token: sharingToken});
+        viewer.show(downloadUrl, fileType, false);
     }
 });
