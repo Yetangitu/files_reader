@@ -1,3 +1,7 @@
+## 1.5.0 - 2022-08-24
+### Changed
+ - raised version number to 1.5.0 to avoid confusion with a forked version of this app
+
 ## 1.4.0 - 2022-08-24
 ### Fixed
  - substantial bit rot accrued in 4 years of non-maintenance which made Reader unusable
