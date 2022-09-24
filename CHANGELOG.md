@@ -1,3 +1,7 @@
+## 1.5.2 - 2022-08-24
+### Fixed
+ - Typo in (database) Migrations kept Reader working for those who did not already have the correct table in their database
+
 ## 1.5.1 - 2022-08-24
 ### Fixed
  - Public pages also needed their plugin script changes, oops... fixed.
